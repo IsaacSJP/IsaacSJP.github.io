@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 20px 0 10px;
+      text-align: center;
+    }
+
+    #gameCanvas {
+      border: 2px solid #fff;
+      background-color: #222;
+      max-width: 100%;
+      touch-action: none;
+    }
+
+    #score {
+      margin: 10px;
+      font-size: 20px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 80px 80px 80px;
+      grid-template-rows: 80px 80px;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      width: 80px;
+      height: 80px;
+      font-size: 30px;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
+
+    .empty {
+      background: transparent;
+      pointer-events: none;
+    }
+
+    @media (max-width: 500px) {
+      .btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+
+      .controls {
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Snake Game</h1>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <div id="score">Puntaje: 0</div>
+
+  <!-- Botones de control táctil -->
+  <div class="controls">
+    <div class="empty"></div>
+    <button class="btn" onclick="setDirection('UP')">⬆️</button>
+    <div class="empty"></div>
+    <button class="btn" onclick="setDirection('LEFT')">⬅️</button>
+    <button class="btn" onclick="setDirection('DOWN')">⬇️</button>
+    <button class="btn" onclick="setDirection('RIGHT')">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+    let score = 0;
+
+    let snake = [];
+    snake[0] = { x: 9 * box, y: 9 * box };
+
+    let food = {
+      x: Math.floor(Math.random() * 20) * box,
+      y: Math.floor(Math.random() * 20) * box,
+    };
+
+    let direction = null;
+
+    document.addEventListener("keydown", changeDirection);
+
+    function changeDirection(e) {
+      if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function setDirection(dir) {
+      if (dir === "LEFT" && direction !== "RIGHT") direction = "LEFT";
+      else if (dir === "UP" && direction !== "DOWN") direction = "UP";
+      else if (dir === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
+      else if (dir === "DOWN" && direction !== "UP") direction = "DOWN";
+    }
+
+    function drawGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "lime" : "green";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === "LEFT") headX -= box;
+      if (direction === "UP") headY -= box;
+      if (direction === "RIGHT") headX += box;
+      if (direction === "DOWN") headY += box;
+
+      if (headX === food.x && headY === food.y) {
+        score++;
+        food = {
+          x: Math.floor(Math.random() * 20) * box,
+          y: Math.floor(Math.random() * 20) * box,
+        };
+      } else {
+        snake.pop();
+      }
+
+      const newHead = { x: headX, y: headY };
+
+      if (
+        headX < 0 || headY < 0 || headX >= canvas.width || headY >= canvas.height ||
+        snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)
+      ) {
+        clearInterval(game);
+        alert("¡Game Over! Puntaje: " + score);
+        location.reload();
+      }
+
+      snake.unshift(newHead);
+      document.getElementById("score").textContent = "Puntaje: " + score;
+    }
+
+    const game = setInterval(drawGame, 100);
+  </script>
+</body>
+</html>
